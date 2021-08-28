@@ -10,7 +10,7 @@ const compilerInput = {
     language: 'Solidity',
     sources:
     {
-        contractName: 
+        'StudentsContract.sol': 
         {
             content: source
         }
