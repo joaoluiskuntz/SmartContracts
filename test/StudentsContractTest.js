@@ -44,18 +44,16 @@ describe('Students Contract', async() => {
             .call();
 
         assert.strictEqual(student[0], name);
-        assert.strictEqual(student[1], age.toString());
-            
+        assert.strictEqual(student[1], age.toString());        
     });
 
     it('Should return the default values when the student is not found', async () =>{
         let student = await studentsContract.methods
-            .getEnrolledStudentByAddress(account_1)
+            .getEnrolledStudentByAddress(account_2)
             .call();
 
         assert.strictEqual(student[0], '');
-        assert.strictEqual(student[1], '0');
-            
+        assert.strictEqual(student[1], '0');         
     });
 
     it('Should not include a student with an invalid name', async () =>{
