@@ -5,12 +5,13 @@ contract CellPhoneCompanyContract{
 
     struct Customer {
         string customerName;
-        uint16 customerBalance;
+        uint customerBalance;
     }
 
     struct Product{
         string productName;
-        ufixed productPrice;
+        uint productPoints;
+        uint amountExchanged;
     }
 
     Product[] public products;
@@ -23,13 +24,13 @@ contract CellPhoneCompanyContract{
         contractOwner = msg.sender;
 
         Product memory product0 =
-            Product('Watch', 0.5 ether);
+            Product('Watch', 2,0);
 
         Product memory product1 =
-            Product('Cellphone', 2.2 ether);
+            Product('Cellphone', 5,0);
 
         Product memory product2 =
-            Product('Computer', 3.5 ether);
+            Product('Computer', 10,0);
 
         products.push(product0);
         products.push(product1);
@@ -37,19 +38,13 @@ contract CellPhoneCompanyContract{
     }
 
     function enrollCustomer(
-        string memory customerName,
-        uint16 customerBalance
+        string memory customerName
     )
         public {
         
         require(
             isCustomerNameValid(customerName), 
             "Name must be informed"
-        );
-
-        require(
-            isCustomerBalanceValid(customerBalance), 
-            "Balance must be GOE zero"
         );
         
         require(
@@ -61,7 +56,7 @@ contract CellPhoneCompanyContract{
         
         Customer memory customer;
         customer.customerName = customerName;
-        customer.customerBalance = customerBalance;
+        customer.customerBalance = 0;
 
         assert(
             isCustomerValid(customer)
@@ -70,13 +65,61 @@ contract CellPhoneCompanyContract{
         enrolledCustomers[msg.sender] = customer;
     }
 
+    function payMonthlyBilling(
+        uint totalDueInEther
+    )
+        public
+        payable
+        {
+            require(
+                msg.value == totalDueInEther,
+                "Not enough funds!"
+            );
+
+            Customer storage customer = enrolledCustomers[msg.sender];
+            require(
+                isCustomerValid(customer),
+                "Customer not enrolled"
+            );
+
+            customer.customerBalance += 1;     
+    }
+
     function getEnrolledCustomerByAddress(
         address customerAddress
-) 
+    ) 
         public
         view 
         returns (Customer memory){
             return enrolledCustomers[customerAddress];
+    }
+
+    function exchangeCustomerPointsByProduct(
+        uint productIndex
+    )
+        public
+    {
+        require(
+            productIndex <= products.length-1,
+            "Product index is not valid"
+        );
+
+        Customer storage customer = enrolledCustomers[msg.sender];
+        require(
+            isCustomerValid(customer),
+            "Customer not enrolled"
+        );
+
+        Product storage product = products[productIndex];
+        require(
+            customer.customerBalance >= product.productPoints,
+            "Not enough points to be used"
+        );
+
+        customer.customerBalance -= product.productPoints;
+        product.amountExchanged += 1;
+
+        assert(customer.customerBalance >= 0);
     }
 
     function isCustomerValid(Customer memory customer)
@@ -87,7 +130,7 @@ contract CellPhoneCompanyContract{
                 isCustomerBalanceValid(customer.customerBalance);
     }
 
-    function isCustomerBalanceValid(uint16 customerBalance)
+    function isCustomerBalanceValid(uint customerBalance)
         private
         pure
         returns(bool){
