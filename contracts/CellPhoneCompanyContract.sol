@@ -151,14 +151,15 @@ contract CellPhoneCompanyContract{
                 isCustomerValid(customer),
                 "Customer is not valid"
             );
+            
+            totalValuePaid-=amountToTransfer;
+            assert(totalValuePaid >= 0);
+
             (bool success,) = destinationAddress.call{value:amountToTransfer}("");
             require(
                 success,
                 "Could not transfer to destination address"
-            );
-            totalValuePaid-=amountToTransfer;
-
-            assert(totalValuePaid >= 0);           
+            );          
     }
 
     function isCustomerValid(Customer memory customer)
