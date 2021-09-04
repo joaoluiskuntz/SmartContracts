@@ -4,7 +4,7 @@
   "description": "Pacote que simula a implementação de um smart contract",
   "main": "index.js",
   "scripts": {
-    "test": "mocha"
+    "test": "mocha --timeout 15000"
   },
   "author": "Joao Kuntz",
   "license": "ISC",

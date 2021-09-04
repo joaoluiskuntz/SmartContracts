@@ -2,7 +2,7 @@ const path = require('path');
 const fs = require('fs');
 const solc = require('solc');
 
-const contractName = 'StudentsContract.sol';
+const contractName = 'CellPhoneCompanyContract.sol';
 const contractPath = path.resolve(__dirname,'../contracts', contractName);
 const source = fs.readFileSync(contractPath, 'utf8');
 
@@ -10,7 +10,7 @@ const compilerInput = {
     language: 'Solidity',
     sources:
     {
-        'StudentsContract.sol': 
+        'CellPhoneCompanyContract.sol': 
         {
             content: source
         }
@@ -36,9 +36,13 @@ const output = JSON.parse(
         solc.compile(inputString)
     );
 
+// const contractEVM = output
+//                     .contracts[contractName]
+//                     .Students;
+
 const contractEVM = output
                     .contracts[contractName]
-                    .Students;
+                    .CellPhoneCompanyContract;
 
 const abiJSON = contractEVM['abi'];
 const bytecode = contractEVM['evm']['bytecode']['object'];

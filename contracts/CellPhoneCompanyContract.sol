@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity >= 0.8.0;
+pragma solidity 0.8.0;
 
 contract CellPhoneCompanyContract{
 
@@ -16,9 +16,14 @@ contract CellPhoneCompanyContract{
 
     Product[] public products;
     address public contractOwner;
+    uint public totalValuePaid;
 
     mapping(address=>Customer) private enrolledCustomers;
         
+    modifier contractOwnerOnly(){
+        require (msg.sender == contractOwner);
+        _;
+    }
 
     constructor(){
         contractOwner = msg.sender;
@@ -56,7 +61,6 @@ contract CellPhoneCompanyContract{
         
         Customer memory customer;
         customer.customerName = customerName;
-        customer.customerBalance = 0;
 
         assert(
             isCustomerValid(customer)
@@ -66,13 +70,13 @@ contract CellPhoneCompanyContract{
     }
 
     function payMonthlyBilling(
-        uint totalDueInEther
+        uint totalDueInWei
     )
         public
         payable
         {
             require(
-                msg.value == totalDueInEther,
+                msg.value == totalDueInWei,
                 "Not enough funds!"
             );
 
@@ -82,7 +86,8 @@ contract CellPhoneCompanyContract{
                 "Customer not enrolled"
             );
 
-            customer.customerBalance += 1;     
+            customer.customerBalance += 1;
+            totalValuePaid += totalDueInWei; 
     }
 
     function getEnrolledCustomerByAddress(
@@ -122,6 +127,37 @@ contract CellPhoneCompanyContract{
         assert(customer.customerBalance >= 0);
     }
 
+    function getContractBalance()
+        public
+        view
+        contractOwnerOnly
+        returns(uint){
+            return totalValuePaid;
+    }
+
+    function transferToAccount(
+        address payable destinationAddress,
+        uint amountToTransfer
+    )
+        public
+        contractOwnerOnly{
+            require(
+                amountToTransfer>=totalValuePaid,
+                "Amount to transfer must be GOE to the total value"
+            );
+
+            Customer memory customer = enrolledCustomers[destinationAddress];
+            require(
+                isCustomerValid(customer),
+                "Customer is not valid"
+            );
+
+            destinationAddress.transfer(amountToTransfer);
+            totalValuePaid-=amountToTransfer;
+
+            assert(totalValuePaid >= 0);           
+    }
+
     function isCustomerValid(Customer memory customer)
         private
         pure
@@ -134,7 +170,7 @@ contract CellPhoneCompanyContract{
         private
         pure
         returns(bool){
-            return customerBalance > 0;
+            return customerBalance >= 0;
     }
 
     function isCustomerNameValid(string memory customerName)
